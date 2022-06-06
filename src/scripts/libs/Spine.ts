@@ -10,7 +10,7 @@ export default class SpineGameObject {
 
     public material = new MeshBasicMaterial({
         color: 0xff000000,
-        wireframe: false,
+        wireframe: true,
     });
 
     public _x: number;

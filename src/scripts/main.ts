@@ -1,10 +1,24 @@
-
-import * as THREE from 'three';
+import * as THREE from "three";
 window.THREE = THREE;
 
-import * as SPINE from './libs/spine-threejs.js';
+import * as SPINE from "./libs/spine-threejs.js";
 window.SPINE = SPINE.default as any;
 
-import { App } from './app/app';
+import Game from "./app/Game";
+import Boot from "./app/scenes/Boot";
 
-new App();
+new Game({
+    width: innerWidth,
+    height: innerHeight,
+    canvas: document.getElementById("main-canvas") as HTMLCanvasElement,
+    antialias: true,
+    backgroundColor: new THREE.Color("rgb(0,0,0)"),
+    backgroundAlpha: 1,
+    scenes: [Boot],
+    camera: new THREE.PerspectiveCamera(
+        50,
+        innerWidth / innerHeight,
+        0.1,
+        10000
+    ),
+});
