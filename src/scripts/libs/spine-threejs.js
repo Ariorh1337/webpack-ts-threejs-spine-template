@@ -241,23 +241,32 @@ var spine;
 		}
 	}
 	spine.RotateTimeline = RotateTimeline;
-	var TranslateTimeline = (function (_super) {
-		__extends(TranslateTimeline, _super);
-		function TranslateTimeline(frameCount) {
-			var _this = _super.call(this, frameCount) || this;
-			_this.frames = spine.Utils.newFloatArray(frameCount * TranslateTimeline.ENTRIES);
-			return _this;
+
+	class TranslateTimeline extends CurveTimeline {
+		static ENTRIES = 3;
+		static PREV_TIME = -3;
+		static PREV_X = -2;
+		static PREV_Y = -1;
+		static X = 1;
+		static Y = 2;
+
+		constructor(frameCount) {
+			super(frameCount);
+			this.frames = spine.Utils.newFloatArray(frameCount * TranslateTimeline.ENTRIES);
 		}
-		TranslateTimeline.prototype.getPropertyId = function () {
+
+		getPropertyId() {
 			return (TimelineType.translate << 24) + this.boneIndex;
 		};
-		TranslateTimeline.prototype.setFrame = function (frameIndex, time, x, y) {
+
+		setFrame(frameIndex, time, x, y) {
 			frameIndex *= TranslateTimeline.ENTRIES;
 			this.frames[frameIndex] = time;
 			this.frames[frameIndex + TranslateTimeline.X] = x;
 			this.frames[frameIndex + TranslateTimeline.Y] = y;
-		};
-		TranslateTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, blend, direction) {
+		}
+
+		apply(skeleton, lastTime, time, events, alpha, blend, direction) {
 			var frames = this.frames;
 			var bone = skeleton.bones[this.boneIndex];
 			if (time < frames[0]) {
@@ -300,25 +309,20 @@ var spine;
 					bone.x += x * alpha;
 					bone.y += y * alpha;
 			}
-		};
-		TranslateTimeline.ENTRIES = 3;
-		TranslateTimeline.PREV_TIME = -3;
-		TranslateTimeline.PREV_X = -2;
-		TranslateTimeline.PREV_Y = -1;
-		TranslateTimeline.X = 1;
-		TranslateTimeline.Y = 2;
-		return TranslateTimeline;
-	}(CurveTimeline));
-	spine.TranslateTimeline = TranslateTimeline;
-	var ScaleTimeline = (function (_super) {
-		__extends(ScaleTimeline, _super);
-		function ScaleTimeline(frameCount) {
-			return _super.call(this, frameCount) || this;
 		}
-		ScaleTimeline.prototype.getPropertyId = function () {
+	}
+	spine.TranslateTimeline = TranslateTimeline;
+
+	class ScaleTimeline extends TranslateTimeline {
+		constructor(frameCount) {
+			super(frameCount);
+		}
+
+		getPropertyId() {
 			return (TimelineType.scale << 24) + this.boneIndex;
-		};
-		ScaleTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, blend, direction) {
+		}
+
+		apply(skeleton, lastTime, time, events, alpha, blend, direction) {
 			var frames = this.frames;
 			var bone = skeleton.bones[this.boneIndex];
 			if (time < frames[0]) {
@@ -404,19 +408,20 @@ var spine;
 					}
 				}
 			}
-		};
-		return ScaleTimeline;
-	}(TranslateTimeline));
-	spine.ScaleTimeline = ScaleTimeline;
-	var ShearTimeline = (function (_super) {
-		__extends(ShearTimeline, _super);
-		function ShearTimeline(frameCount) {
-			return _super.call(this, frameCount) || this;
 		}
-		ShearTimeline.prototype.getPropertyId = function () {
+	}
+	spine.ScaleTimeline = ScaleTimeline;
+
+	class ShearTimeline extends TranslateTimeline {
+		constructor(frameCount) {
+			super(frameCount);
+		}
+
+		getPropertyId() {
 			return (TimelineType.shear << 24) + this.boneIndex;
-		};
-		ShearTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, blend, direction) {
+		}
+
+		apply(skeleton, lastTime, time, events, alpha, blend, direction) {
 			var frames = this.frames;
 			var bone = skeleton.bones[this.boneIndex];
 			if (time < frames[0]) {
@@ -459,29 +464,42 @@ var spine;
 					bone.shearX += x * alpha;
 					bone.shearY += y * alpha;
 			}
-		};
-		return ShearTimeline;
-	}(TranslateTimeline));
-	spine.ShearTimeline = ShearTimeline;
-	var ColorTimeline = (function (_super) {
-		__extends(ColorTimeline, _super);
-		function ColorTimeline(frameCount) {
-			var _this = _super.call(this, frameCount) || this;
-			_this.frames = spine.Utils.newFloatArray(frameCount * ColorTimeline.ENTRIES);
-			return _this;
 		}
-		ColorTimeline.prototype.getPropertyId = function () {
+	}
+	spine.ShearTimeline = ShearTimeline;
+
+
+	class ColorTimeline extends CurveTimeline {
+		static ENTRIES = 5;
+		static PREV_TIME = -5;
+		static PREV_R = -4;
+		static PREV_G = -3;
+		static PREV_B = -2;
+		static PREV_A = -1;
+		static R = 1;
+		static G = 2;
+		static B = 3;
+		static A = 4;
+
+		constructor(frameCount) {
+			super(frameCount);
+			this.frames = spine.Utils.newFloatArray(frameCount * ColorTimeline.ENTRIES);
+		}
+
+		getPropertyId() {
 			return (TimelineType.color << 24) + this.slotIndex;
-		};
-		ColorTimeline.prototype.setFrame = function (frameIndex, time, r, g, b, a) {
+		}
+
+		setFrame(frameIndex, time, r, g, b, a) {
 			frameIndex *= ColorTimeline.ENTRIES;
 			this.frames[frameIndex] = time;
 			this.frames[frameIndex + ColorTimeline.R] = r;
 			this.frames[frameIndex + ColorTimeline.G] = g;
 			this.frames[frameIndex + ColorTimeline.B] = b;
 			this.frames[frameIndex + ColorTimeline.A] = a;
-		};
-		ColorTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, blend, direction) {
+		}
+
+		apply(skeleton, lastTime, time, events, alpha, blend, direction) {
 			var slot = skeleton.slots[this.slotIndex];
 			var frames = this.frames;
 			if (time < frames[0]) {
@@ -524,31 +542,38 @@ var spine;
 					color.setFromColor(slot.data.color);
 				color.add((r - color.r) * alpha, (g - color.g) * alpha, (b - color.b) * alpha, (a - color.a) * alpha);
 			}
-		};
-		ColorTimeline.ENTRIES = 5;
-		ColorTimeline.PREV_TIME = -5;
-		ColorTimeline.PREV_R = -4;
-		ColorTimeline.PREV_G = -3;
-		ColorTimeline.PREV_B = -2;
-		ColorTimeline.PREV_A = -1;
-		ColorTimeline.R = 1;
-		ColorTimeline.G = 2;
-		ColorTimeline.B = 3;
-		ColorTimeline.A = 4;
-		return ColorTimeline;
-	}(CurveTimeline));
-	spine.ColorTimeline = ColorTimeline;
-	var TwoColorTimeline = (function (_super) {
-		__extends(TwoColorTimeline, _super);
-		function TwoColorTimeline(frameCount) {
-			var _this = _super.call(this, frameCount) || this;
-			_this.frames = spine.Utils.newFloatArray(frameCount * TwoColorTimeline.ENTRIES);
-			return _this;
 		}
-		TwoColorTimeline.prototype.getPropertyId = function () {
+	}
+	spine.ColorTimeline = ColorTimeline;
+
+	class TwoColorTimeline extends CurveTimeline {
+		static ENTRIES = 8;
+		static PREV_TIME = -8;
+		static PREV_R = -7;
+		static PREV_G = -6;
+		static PREV_B = -5;
+		static PREV_A = -4;
+		static PREV_R2 = -3;
+		static PREV_G2 = -2;
+		static PREV_B2 = -1;
+		static R = 1;
+		static G = 2;
+		static B = 3;
+		static A = 4;
+		static R2 = 5;
+		static G2 = 6;
+		static B2 = 7;
+
+		constructor(frameCount) {
+			super(frameCount);
+			this.frames = spine.Utils.newFloatArray(frameCount * TwoColorTimeline.ENTRIES);
+		}
+
+		getPropertyId = function () {
 			return (TimelineType.twoColor << 24) + this.slotIndex;
 		};
-		TwoColorTimeline.prototype.setFrame = function (frameIndex, time, r, g, b, a, r2, g2, b2) {
+
+		setFrame = function (frameIndex, time, r, g, b, a, r2, g2, b2) {
 			frameIndex *= TwoColorTimeline.ENTRIES;
 			this.frames[frameIndex] = time;
 			this.frames[frameIndex + TwoColorTimeline.R] = r;
@@ -559,7 +584,8 @@ var spine;
 			this.frames[frameIndex + TwoColorTimeline.G2] = g2;
 			this.frames[frameIndex + TwoColorTimeline.B2] = b2;
 		};
-		TwoColorTimeline.prototype.apply = function (skeleton, lastTime, time, events, alpha, blend, direction) {
+
+		apply = function (skeleton, lastTime, time, events, alpha, blend, direction) {
 			var slot = skeleton.slots[this.slotIndex];
 			var frames = this.frames;
 			if (time < frames[0]) {
@@ -619,24 +645,7 @@ var spine;
 				dark.add((r2 - dark.r) * alpha, (g2 - dark.g) * alpha, (b2 - dark.b) * alpha, 0);
 			}
 		};
-		TwoColorTimeline.ENTRIES = 8;
-		TwoColorTimeline.PREV_TIME = -8;
-		TwoColorTimeline.PREV_R = -7;
-		TwoColorTimeline.PREV_G = -6;
-		TwoColorTimeline.PREV_B = -5;
-		TwoColorTimeline.PREV_A = -4;
-		TwoColorTimeline.PREV_R2 = -3;
-		TwoColorTimeline.PREV_G2 = -2;
-		TwoColorTimeline.PREV_B2 = -1;
-		TwoColorTimeline.R = 1;
-		TwoColorTimeline.G = 2;
-		TwoColorTimeline.B = 3;
-		TwoColorTimeline.A = 4;
-		TwoColorTimeline.R2 = 5;
-		TwoColorTimeline.G2 = 6;
-		TwoColorTimeline.B2 = 7;
-		return TwoColorTimeline;
-	}(CurveTimeline));
+	}
 	spine.TwoColorTimeline = TwoColorTimeline;
 	var AttachmentTimeline = (function () {
 		function AttachmentTimeline(frameCount) {
@@ -681,24 +690,26 @@ var spine;
 	}());
 	spine.AttachmentTimeline = AttachmentTimeline;
 	var zeros = null;
-	var DeformTimeline = (function (_super) {
-		__extends(DeformTimeline, _super);
-		function DeformTimeline(frameCount) {
-			var _this = _super.call(this, frameCount) || this;
-			_this.frames = spine.Utils.newFloatArray(frameCount);
-			_this.frameVertices = new Array(frameCount);
+
+	class DeformTimeline extends CurveTimeline {
+		constructor(frameCount) {
+			super(frameCount);
+			this.frames = spine.Utils.newFloatArray(frameCount);
+			this.frameVertices = new Array(frameCount);
 			if (zeros == null)
 				zeros = spine.Utils.newFloatArray(64);
-			return _this;
 		}
-		DeformTimeline.prototype.getPropertyId = function () {
+
+		getPropertyId = function () {
 			return (TimelineType.deform << 27) + +this.attachment.id + this.slotIndex;
 		};
-		DeformTimeline.prototype.setFrame = function (frameIndex, time, vertices) {
+
+		setFrame = function (frameIndex, time, vertices) {
 			this.frames[frameIndex] = time;
 			this.frameVertices[frameIndex] = vertices;
 		};
-		DeformTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
+
+		apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
 			var slot = skeleton.slots[this.slotIndex];
 			var slotAttachment = slot.getAttachment();
 			if (!(slotAttachment instanceof spine.VertexAttachment) || !slotAttachment.applyDeform(this.attachment))
@@ -865,9 +876,9 @@ var spine;
 				}
 			}
 		};
-		return DeformTimeline;
-	}(CurveTimeline));
+	}
 	spine.DeformTimeline = DeformTimeline;
+
 	var EventTimeline = (function () {
 		function EventTimeline(frameCount) {
 			this.frames = spine.Utils.newFloatArray(frameCount);
@@ -958,17 +969,29 @@ var spine;
 		return DrawOrderTimeline;
 	}());
 	spine.DrawOrderTimeline = DrawOrderTimeline;
-	var IkConstraintTimeline = (function (_super) {
-		__extends(IkConstraintTimeline, _super);
-		function IkConstraintTimeline(frameCount) {
-			var _this = _super.call(this, frameCount) || this;
-			_this.frames = spine.Utils.newFloatArray(frameCount * IkConstraintTimeline.ENTRIES);
-			return _this;
+
+	class IkConstraintTimeline extends CurveTimeline {
+		static ENTRIES = 5;
+		static PREV_TIME = -5;
+		static PREV_MIX = -4;
+		static PREV_BEND_DIRECTION = -3;
+		static PREV_COMPRESS = -2;
+		static PREV_STRETCH = -1;
+		static MIX = 1;
+		static BEND_DIRECTION = 2;
+		static COMPRESS = 3;
+		static STRETCH = 4;
+
+		constructor(frameCount) {
+			super(frameCount);
+			this.frames = spine.Utils.newFloatArray(frameCount * IkConstraintTimeline.ENTRIES);
 		}
-		IkConstraintTimeline.prototype.getPropertyId = function () {
+
+		getPropertyId = function () {
 			return (TimelineType.ikConstraint << 24) + this.ikConstraintIndex;
 		};
-		IkConstraintTimeline.prototype.setFrame = function (frameIndex, time, mix, bendDirection, compress, stretch) {
+
+		setFrame = function (frameIndex, time, mix, bendDirection, compress, stretch) {
 			frameIndex *= IkConstraintTimeline.ENTRIES;
 			this.frames[frameIndex] = time;
 			this.frames[frameIndex + IkConstraintTimeline.MIX] = mix;
@@ -976,7 +999,8 @@ var spine;
 			this.frames[frameIndex + IkConstraintTimeline.COMPRESS] = compress ? 1 : 0;
 			this.frames[frameIndex + IkConstraintTimeline.STRETCH] = stretch ? 1 : 0;
 		};
-		IkConstraintTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
+
+		apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
 			var frames = this.frames;
 			var constraint = skeleton.ikConstraints[this.ikConstraintIndex];
 			if (time < frames[0]) {
@@ -1045,30 +1069,31 @@ var spine;
 				}
 			}
 		};
-		IkConstraintTimeline.ENTRIES = 5;
-		IkConstraintTimeline.PREV_TIME = -5;
-		IkConstraintTimeline.PREV_MIX = -4;
-		IkConstraintTimeline.PREV_BEND_DIRECTION = -3;
-		IkConstraintTimeline.PREV_COMPRESS = -2;
-		IkConstraintTimeline.PREV_STRETCH = -1;
-		IkConstraintTimeline.MIX = 1;
-		IkConstraintTimeline.BEND_DIRECTION = 2;
-		IkConstraintTimeline.COMPRESS = 3;
-		IkConstraintTimeline.STRETCH = 4;
-		return IkConstraintTimeline;
-	}(CurveTimeline));
+	}
 	spine.IkConstraintTimeline = IkConstraintTimeline;
-	var TransformConstraintTimeline = (function (_super) {
-		__extends(TransformConstraintTimeline, _super);
-		function TransformConstraintTimeline(frameCount) {
-			var _this = _super.call(this, frameCount) || this;
-			_this.frames = spine.Utils.newFloatArray(frameCount * TransformConstraintTimeline.ENTRIES);
-			return _this;
+
+	class TransformConstraintTimeline extends CurveTimeline {
+		static ENTRIES = 5;
+		static PREV_TIME = -5;
+		static PREV_ROTATE = -4;
+		static PREV_TRANSLATE = -3;
+		static PREV_SCALE = -2;
+		static PREV_SHEAR = -1;
+		static ROTATE = 1;
+		static TRANSLATE = 2;
+		static SCALE = 3;
+		static SHEAR = 4;
+
+		constructor(frameCount) {
+			super(frameCount);
+			this.frames = spine.Utils.newFloatArray(frameCount * TransformConstraintTimeline.ENTRIES);
 		}
-		TransformConstraintTimeline.prototype.getPropertyId = function () {
+
+		getPropertyId = function () {
 			return (TimelineType.transformConstraint << 24) + this.transformConstraintIndex;
 		};
-		TransformConstraintTimeline.prototype.setFrame = function (frameIndex, time, rotateMix, translateMix, scaleMix, shearMix) {
+
+		setFrame = function (frameIndex, time, rotateMix, translateMix, scaleMix, shearMix) {
 			frameIndex *= TransformConstraintTimeline.ENTRIES;
 			this.frames[frameIndex] = time;
 			this.frames[frameIndex + TransformConstraintTimeline.ROTATE] = rotateMix;
@@ -1076,7 +1101,8 @@ var spine;
 			this.frames[frameIndex + TransformConstraintTimeline.SCALE] = scaleMix;
 			this.frames[frameIndex + TransformConstraintTimeline.SHEAR] = shearMix;
 		};
-		TransformConstraintTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
+
+		apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
 			var frames = this.frames;
 			var constraint = skeleton.transformConstraints[this.transformConstraintIndex];
 			if (time < frames[0]) {
@@ -1131,35 +1157,31 @@ var spine;
 				constraint.shearMix += (shear - constraint.shearMix) * alpha;
 			}
 		};
-		TransformConstraintTimeline.ENTRIES = 5;
-		TransformConstraintTimeline.PREV_TIME = -5;
-		TransformConstraintTimeline.PREV_ROTATE = -4;
-		TransformConstraintTimeline.PREV_TRANSLATE = -3;
-		TransformConstraintTimeline.PREV_SCALE = -2;
-		TransformConstraintTimeline.PREV_SHEAR = -1;
-		TransformConstraintTimeline.ROTATE = 1;
-		TransformConstraintTimeline.TRANSLATE = 2;
-		TransformConstraintTimeline.SCALE = 3;
-		TransformConstraintTimeline.SHEAR = 4;
-		return TransformConstraintTimeline;
-	}(CurveTimeline));
+	}
 	spine.TransformConstraintTimeline = TransformConstraintTimeline;
-	var PathConstraintPositionTimeline = (function (_super) {
-		__extends(PathConstraintPositionTimeline, _super);
-		function PathConstraintPositionTimeline(frameCount) {
-			var _this = _super.call(this, frameCount) || this;
-			_this.frames = spine.Utils.newFloatArray(frameCount * PathConstraintPositionTimeline.ENTRIES);
-			return _this;
+
+	class PathConstraintPositionTimeline extends CurveTimeline {
+		static ENTRIES = 2;
+		static PREV_TIME = -2;
+		static PREV_VALUE = -1;
+		static VALUE = 1;
+
+		constructor(frameCount) {
+			super(frameCount);
+			this.frames = spine.Utils.newFloatArray(frameCount * PathConstraintPositionTimeline.ENTRIES);
 		}
-		PathConstraintPositionTimeline.prototype.getPropertyId = function () {
+
+		getPropertyId = function () {
 			return (TimelineType.pathConstraintPosition << 24) + this.pathConstraintIndex;
 		};
-		PathConstraintPositionTimeline.prototype.setFrame = function (frameIndex, time, value) {
+
+		setFrame = function (frameIndex, time, value) {
 			frameIndex *= PathConstraintPositionTimeline.ENTRIES;
 			this.frames[frameIndex] = time;
 			this.frames[frameIndex + PathConstraintPositionTimeline.VALUE] = value;
 		};
-		PathConstraintPositionTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
+
+		apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
 			var frames = this.frames;
 			var constraint = skeleton.pathConstraints[this.pathConstraintIndex];
 			if (time < frames[0]) {
@@ -1187,22 +1209,19 @@ var spine;
 			else
 				constraint.position += (position - constraint.position) * alpha;
 		};
-		PathConstraintPositionTimeline.ENTRIES = 2;
-		PathConstraintPositionTimeline.PREV_TIME = -2;
-		PathConstraintPositionTimeline.PREV_VALUE = -1;
-		PathConstraintPositionTimeline.VALUE = 1;
-		return PathConstraintPositionTimeline;
-	}(CurveTimeline));
+	}
 	spine.PathConstraintPositionTimeline = PathConstraintPositionTimeline;
-	var PathConstraintSpacingTimeline = (function (_super) {
-		__extends(PathConstraintSpacingTimeline, _super);
-		function PathConstraintSpacingTimeline(frameCount) {
-			return _super.call(this, frameCount) || this;
+
+	class PathConstraintSpacingTimeline extends PathConstraintPositionTimeline {
+		constructor(frameCount) {
+			super(frameCount);
 		}
-		PathConstraintSpacingTimeline.prototype.getPropertyId = function () {
+
+		getPropertyId = function () {
 			return (TimelineType.pathConstraintSpacing << 24) + this.pathConstraintIndex;
 		};
-		PathConstraintSpacingTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
+
+		apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
 			var frames = this.frames;
 			var constraint = skeleton.pathConstraints[this.pathConstraintIndex];
 			if (time < frames[0]) {
@@ -1230,26 +1249,34 @@ var spine;
 			else
 				constraint.spacing += (spacing - constraint.spacing) * alpha;
 		};
-		return PathConstraintSpacingTimeline;
-	}(PathConstraintPositionTimeline));
+	}
 	spine.PathConstraintSpacingTimeline = PathConstraintSpacingTimeline;
-	var PathConstraintMixTimeline = (function (_super) {
-		__extends(PathConstraintMixTimeline, _super);
-		function PathConstraintMixTimeline(frameCount) {
-			var _this = _super.call(this, frameCount) || this;
-			_this.frames = spine.Utils.newFloatArray(frameCount * PathConstraintMixTimeline.ENTRIES);
-			return _this;
+
+	class PathConstraintMixTimeline extends CurveTimeline {
+		static ENTRIES = 3;
+		static PREV_TIME = -3;
+		static PREV_ROTATE = -2;
+		static PREV_TRANSLATE = -1;
+		static ROTATE = 1;
+		static TRANSLATE = 2;
+
+		constructor(frameCount) {
+			super(frameCount);
+			this.frames = spine.Utils.newFloatArray(frameCount * PathConstraintMixTimeline.ENTRIES);
 		}
-		PathConstraintMixTimeline.prototype.getPropertyId = function () {
+
+		getPropertyId = function () {
 			return (TimelineType.pathConstraintMix << 24) + this.pathConstraintIndex;
 		};
-		PathConstraintMixTimeline.prototype.setFrame = function (frameIndex, time, rotateMix, translateMix) {
+
+		setFrame = function (frameIndex, time, rotateMix, translateMix) {
 			frameIndex *= PathConstraintMixTimeline.ENTRIES;
 			this.frames[frameIndex] = time;
 			this.frames[frameIndex + PathConstraintMixTimeline.ROTATE] = rotateMix;
 			this.frames[frameIndex + PathConstraintMixTimeline.TRANSLATE] = translateMix;
 		};
-		PathConstraintMixTimeline.prototype.apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
+
+		apply = function (skeleton, lastTime, time, firedEvents, alpha, blend, direction) {
 			var frames = this.frames;
 			var constraint = skeleton.pathConstraints[this.pathConstraintIndex];
 			if (time < frames[0]) {
@@ -1287,14 +1314,7 @@ var spine;
 				constraint.translateMix += (translate - constraint.translateMix) * alpha;
 			}
 		};
-		PathConstraintMixTimeline.ENTRIES = 3;
-		PathConstraintMixTimeline.PREV_TIME = -3;
-		PathConstraintMixTimeline.PREV_ROTATE = -2;
-		PathConstraintMixTimeline.PREV_TRANSLATE = -1;
-		PathConstraintMixTimeline.ROTATE = 1;
-		PathConstraintMixTimeline.TRANSLATE = 2;
-		return PathConstraintMixTimeline;
-	}(CurveTimeline));
+	}
 	spine.PathConstraintMixTimeline = PathConstraintMixTimeline;
 })(spine || (spine = {}));
 var spine;
@@ -5392,16 +5412,18 @@ var spine;
 		return TextureRegion;
 	}());
 	spine.TextureRegion = TextureRegion;
-	var FakeTexture = (function (_super) {
-		__extends(FakeTexture, _super);
-		function FakeTexture() {
-			return _super !== null && _super.apply(this, arguments) || this;
+
+	class FakeTexture extends Texture {
+		constructor(...args) {
+			super(args);
 		}
-		FakeTexture.prototype.setFilters = function (minFilter, magFilter) { };
-		FakeTexture.prototype.setWraps = function (uWrap, vWrap) { };
-		FakeTexture.prototype.dispose = function () { };
-		return FakeTexture;
-	}(Texture));
+
+		setFilters = function (minFilter, magFilter) { };
+
+		setWraps = function (uWrap, vWrap) { };
+
+		dispose = function () { };
+	}
 	spine.FakeTexture = FakeTexture;
 })(spine || (spine = {}));
 var spine;
