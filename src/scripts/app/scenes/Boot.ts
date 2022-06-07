@@ -1,4 +1,5 @@
 import { Vector3 } from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Spine from "../../libs/Spine";
 import config from "../config";
 import GameScene from "./Scene";
@@ -40,6 +41,8 @@ export default class Boot extends GameScene {
 
         Boot.game.camera.position.set(0, 0, 400);
         Boot.game.camera.lookAt(new Vector3(0, 0, 0));
+
+        new OrbitControls(Boot.game.camera, Boot.game.canvas);
     }
 
     private create() {
@@ -48,7 +51,7 @@ export default class Boot extends GameScene {
             loader: this.loader,
             atlas: "assets/raptor.atlas",
             json: "assets/raptor.json",
-            x: 0,
+            x: -20,
             y: -10,
             scale: 0.1,
             animation: [0, "walk", true],
