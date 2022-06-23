@@ -29,11 +29,11 @@ export default class SpineGameObject {
     }) {
         this.scene = data.scene;
 
-        const atlas = data.loader.get(data.atlas);
+        const atlas = data.loader.spine.get(data.atlas);
         const atlasLoader = new window.SPINE.AtlasAttachmentLoader(atlas);
         this.skeletonJson = new window.SPINE.SkeletonJson(atlasLoader);
 
-        const skeleton = data.loader.get(data.json);
+        const skeleton = data.loader.spine.get(data.json);
         const skeletonData = this.skeletonJson.readSkeletonData(skeleton);
         this.skeletonMesh = new window.SPINE.threejs.SkeletonMesh(skeletonData);
 

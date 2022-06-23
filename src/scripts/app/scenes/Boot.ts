@@ -1,13 +1,14 @@
-import { Vector3 } from "three";
+import { AmbientLight, DirectionalLight, Group, Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Spine from "../../libs/Spine";
 import config from "../config";
+import LoadManager from "../LoadManager";
 import GameScene from "./Scene";
 
 export default class Boot extends GameScene {
     static type = "Boot";
 
-    private loader = new window.SPINE.threejs.AssetManager();
+    private loader = new LoadManager(config);
     private spines = <Spine[]>[];
 
     constructor() {
@@ -16,21 +17,13 @@ export default class Boot extends GameScene {
         this.state.render = false;
         this.state.update = false;
 
-        this.load().then(() => this.init());
+        this.loader.load().then(() => this.init());
     }
 
-    private load() {
-        const load = [] as Promise<unknown>[];
-
-        config.forEach((item) => {
-            load.push(
-                new Promise((resolve, reject) => {
-                    this.loader[item.module](item.key, resolve, reject);
-                })
-            );
+    public update(delta: number) {
+        this.spines.forEach((spine: Spine) => {
+            spine.update(delta);
         });
-
-        return Promise.allSettled(load);
     }
 
     private init() {
@@ -46,6 +39,29 @@ export default class Boot extends GameScene {
     }
 
     private create() {
+        this.createLight();
+        this.createGLB();
+        //this.createSpine();
+    }
+
+    private createLight() {
+        this.add(new AmbientLight(0x00ffff, 0.5));
+
+        const light = new DirectionalLight(0xffffff, 0.5);
+        light.position.set(100, 100, 100);
+
+        this.add(light);
+    }
+
+    private createGLB() {
+        const glb = this.loader.get("assets/cell.glb")[0].scene as Group;
+
+        glb.scale.setScalar(30);
+
+        this.add(glb);
+    }
+
+    private createSpine() {
         const boy = new Spine({
             scene: this,
             loader: this.loader,
@@ -58,11 +74,5 @@ export default class Boot extends GameScene {
         });
 
         this.spines.push(boy);
-    }
-
-    public update(delta: number) {
-        this.spines.forEach((spine: Spine) => {
-            spine.update(delta);
-        });
     }
 }
